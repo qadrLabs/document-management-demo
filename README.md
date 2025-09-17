@@ -1,68 +1,83 @@
-# CodeIgniter 4 Application Starter
+# Demo Project: CodeIgniter 4 Upload & Download File
 
-## What is CodeIgniter?
+Project ini adalah demo dari tutorial CodeIgniter 4 untuk fitur upload dan download file. Panduan lengkap dapat Anda baca di:
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+https://qadrlabs.com/post/tutorial-codeigniter-4-upload-dan-download-file
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+## Tentang Project
+- Framework: CodeIgniter 4 (AppStarter).
+- Fitur: unggah, daftar, lihat detail, unduh, dan hapus dokumen.
+- Struktur utama: `app/Controllers/DocumentController.php`, `app/Models/DocumentModel.php`, tampilan di `app/Views/documents/`, file tersimpan di `public/uploads/`.
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+## Prasyarat
+- PHP 8.1+ dan Composer.
+- Database (MySQL/MariaDB/PostgreSQL) yang terkonfigurasi di `.env`.
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+## Langkah-Langkah Setup
+1. Instal dependensi:
+   ```bash
+   composer install
+   ```
+2. Salin berkas environment dan generate key:
+   ```bash
+   cp env .env
+   php spark key:generate
+   ```
+3. Konfigurasi `.env` (contoh yang perlu disetel):
+   ```ini
+   CI_ENVIRONMENT = development
+   app.baseURL = 'http://localhost:8080/'
+   database.default.hostname = 127.0.0.1
+   database.default.database = your_db
+   database.default.username = your_user
+   database.default.password = your_pass
+   database.default.DBDriver = MySQLi
+   ```
+4. Siapkan database dan jalankan migrasi tabel dokumen:
+   ```bash
+   php spark migrate
+   ```
+5. Jalankan server development:
+   ```bash
+   php spark serve
+   ```
 
-## Installation & updates
+## Cara Menggunakan
+- Akses aplikasi: `http://localhost:8080/` (daftar dokumen).
+- Upload dokumen: `http://localhost:8080/documents/upload`.
+- Unduh/hapus/detail mengikuti tautan pada tabel daftar dokumen.
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+## Hak Akses Folder (OS Spesifik)
+Pastikan folder `writable/` dan `public/uploads/` dapat ditulis (writeable) oleh user/proses web server.
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+### Linux/macOS
+```bash
+# Buat folder yang diperlukan
+mkdir -p writable/{cache,logs,session,uploads} public/uploads
 
-## Setup
+# Opsi 1 (development): kepemilikan ke user saat ini
+chown -R "$(whoami)":"$(id -gn)" writable public/uploads
+find writable public/uploads -type d -exec chmod 775 {} \;
+find writable public/uploads -type f -exec chmod 664 {} \;
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+# Opsi 2 (server): kepemilikan ke user web server
+# Ubuntu/Debian: www-data, CentOS/RHEL: apache, Arch: http
+sudo chown -R www-data:www-data writable public/uploads
+sudo find writable public/uploads -type d -exec chmod 775 {} \;
+sudo find writable public/uploads -type f -exec chmod 664 {} \;
 
-## Important Change with index.php
+# Alternatif granular (jika tersedia ACL)
+sudo setfacl -R -m u:www-data:rwx -m u:"$(whoami)":rwx writable public/uploads
+sudo setfacl -dR -m u:www-data:rwx -m u:"$(whoami)":rwx writable public/uploads
+```
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+### Windows
+- Klik kanan folder `writable` dan `public/uploads` → Properties → Security → Edit.
+- Tambahkan user yang menjalankan PHP/web server (mis. IIS_IUSRS atau user lokal) lalu beri izin `Modify` dan `Write`.
+- Untuk PHP built-in server (`php spark serve`), user yang menjalankan terminal biasanya sudah memiliki izin; pastikan atribut Read-only tidak aktif.
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
-
-**Please** read the user guide for a better explanation of how CI4 works!
-
-## Repository Management
-
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
-
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
-
-## Server Requirements
-
-PHP version 8.1 or higher is required, with the following extensions installed:
-
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
-
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+## Pengujian (opsional)
+Jalankan seluruh test dengan PHPUnit:
+```bash
+composer test
+```
